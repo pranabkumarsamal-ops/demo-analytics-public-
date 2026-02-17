@@ -1,0 +1,99 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Analytics Demo Site</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <!-- GA4 gtag.js (replace G-XXXXXXXXXX with your Measurement ID) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    // Basic consent defaults (functional only until user accepts)
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('consent', 'default', {
+      'ad_storage': 'denied',
+      'analytics_storage': 'denied',
+      'ad_user_data': 'denied',
+      'ad_personalization': 'denied'
+    });
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXXXX', { anonymize_ip: true });
+  </script>
+  <style>
+    :root { --vodared:#e60000; }
+    body { font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; margin: 2rem; }
+    .card { border:1px solid #ddd; padding:1rem; border-radius:8px; margin:1rem 0; }
+    button { padding:0.6rem 1rem; border:0; border-radius:6px; background:var(--vodared); color:#fff; cursor:pointer; }
+    a { color:var(--vodared); }
+    .banner { position:fixed; bottom:0; left:0; right:0; background:#111; color:#fff; padding:1rem; display:flex; gap:1rem; align-items:center; }
+    .banner button { background:#00a884; }
+  </style>
+</head>
+<body>
+  <h1>Analytics Demo Site</h1>
+  <p>Use this page to practice GA4 events, outbound clicks, and form tracking.</p>
+
+  <div class="card">
+    <h2>CTA clicks</h2>
+    <button id="cta-btn">Try CTA</button>
+  </div>
+
+  <div class="card">
+    <h2>Outbound link</h2>
+    <p><a id="outbound-link" href="https://www.example.com" target="_blank" rel="noopener">Visit Example.com</a></p>
+  </div>
+
+  <div class="card">
+    <h2>Form submission</h2>
+    <form id="demo-form">
+      <label>Name <input type="text" name="name" required></label>
+      <button type="submit" style="margin-left:8px;">Submit</button>
+    </form>
+  </div>
+
+  <!-- Minimal consent banner for practice -->
+  <div id="cookie-banner" class="banner" role="region" aria-label="Cookie consent" hidden>
+    <span>This demo uses GA4. Enable analytics cookies?</span>
+    <button id="accept-analytics">Accept</button>
+    <button id="reject-analytics" style="background:#555;">Reject</button>
+  </div>
+
+  <script>
+    // Show consent banner until a choice is made (stored in localStorage for demo)
+    const banner = document.getElementById('cookie-banner');
+    const choice = localStorage.getItem('demo_consent');
+    if (!choice) banner.hidden = false;
+
+    document.getElementById('accept-analytics').onclick = () => {
+      localStorage.setItem('demo_consent','granted');
+      gtag('consent', 'update', { 'analytics_storage': 'granted' });
+      banner.hidden = true;
+    };
+    document.getElementById('reject-analytics').onclick = () => {
+      localStorage.setItem('demo_consent','denied');
+      gtag('consent', 'update', { 'analytics_storage': 'denied' });
+      banner.hidden = true;
+    };
+
+    // Demo events (fire anytime; GA4 will respect consent state)
+    document.getElementById('cta-btn').addEventListener('click', () => {
+      gtag('event', 'cta_click', { cta_label: 'primary_cta', page_section: 'top' });
+      alert('CTA clicked – GA4 event attempted.');
+    });
+
+    document.getElementById('outbound-link').addEventListener('click', () => {
+      gtag('event', 'click_outbound', { destination: 'example.com' });
+    });
+
+    document.getElementById('demo-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = e.target.elements['name'].value || 'unknown';
+      // Do NOT send raw PII like names/emails to GA; use boolean flag only
+      gtag('event', 'lead_submit', { lead_name_present: name.length > 0 });
+      alert('Form submitted – GA4 event attempted.');
+      e.target.reset();
+    });
+  </script>
+</body>
+</html>
